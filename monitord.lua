@@ -57,7 +57,7 @@ local function savefile(path, tab, name)
     end
 end
 
-local function sendsms(tab_srt, admin_to, outgoing)
+local function sendsms(tab_str, admin_to, outgoing)
     for _, admin in ipairs(admin_to) do
         local pathsms = os.date('/var/tmp/'..admin..'_%d_%b_%X')
         local file = io.open(path,'w')
@@ -79,7 +79,7 @@ end
 -- MAIN chunk
 do
     local tab = readfile(TMP_FILE, #ADDRESS)
-    local tab_str
+    local tab_str = {}
     local method
     local address
     local port
