@@ -10,6 +10,7 @@ local ADMIN_FROM = {'79520405261','79509465765'}
 local PASSWORD = 'goodlife'
 local GPIO_NUMBER = {20,21}
 local GPIO_NAME = {'relay','router'}
+local OUTGOING = '/var/spool/sms/outgoing'
     
 local function capture(cmd)
     local file = assert(io.popen(cmd, 'r'))
@@ -65,6 +66,18 @@ local function checkpass(text, password)
     end
 end
 
+local function sendsms(to, str, outgoing)
+    local pathsms = os.date('/var/tmp/'..to..'_%d_%b_%X')
+    local file = io.open(path,'w')
+    if file then
+        file:write('To: '..to..'\n\n')
+        file:write(str)
+        file:flush()
+        file:close()
+        os.execute('mv '..pathsms..' '..outgoing)
+    end
+end
+
 -- MAIN chunk
 do
     local status = arg[1]
@@ -94,7 +107,7 @@ do
             end
             
             if string.match(cmd, 'state') then
-                _,_,out = os.execute('uptime')
+                -- _,_,out = os.execute('uptime')
             elseif string.match(cmd, 'stop') then
                 -- отследить pid процессов
                 _,_,out = os.execute('/etc/init.d/smstools stop')
@@ -104,8 +117,10 @@ do
 
             if out == 0 then
                 -- Send SMS true
+                sendsms(from, cmd..' OK', OUTGOING)
             else
                 -- Send SMS fail
+                sendsms(from, cmd..' FAIL', OUTGOING)
             end
             
         end
