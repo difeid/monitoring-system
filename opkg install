@@ -1,0 +1,14 @@
+luci-i18n-base-ru
+luci-i18n-firewall-ru
+kmod-usb-serial
+kmod-usb-serial-ipw
+kmod-usb-serial-option
+kmod-usb-serial-wwan
+usb-modeswitch
+luci-proto-3g
+comgt
+chat
+smstools3
+terminfo
+libncurses
+screen
