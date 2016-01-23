@@ -57,14 +57,14 @@ local function savefile(path, tab, name)
     end
 end
 
-local function sendsms(tab_str, admin_to, outgoing)
-    for _, admin in ipairs(admin_to) do
-        local pathsms = os.date('/var/tmp/'..admin..'_%d_%b_%X')
+local function sendsms(admin_to, t_str, outgoing)
+    for _, to in ipairs(to) do
+        local pathsms = os.date('/var/tmp/'..to..'_%d_%b_%X')
         local file = io.open(path,'w')
         if file then
-            file:write('To: '..admin..'\n\n')
-            for i = 1,#tab_str do
-                file:write(tab_str[i])
+            file:write('To: '..to..'\n\n')
+            for i = 1,#t_str do
+                file:write(t_str[i])
             end
             file:write(os.date(%X))
             file:flush()
@@ -72,8 +72,8 @@ local function sendsms(tab_str, admin_to, outgoing)
             os.execute('mv '..pathsms..' '..outgoing)
         end
     end
-    tab_str = {}
-    return tab_str
+    t_str = {}
+    return t_str
 end
 
 -- MAIN chunk
@@ -132,7 +132,7 @@ do
             end -- end if address
         end -- end for
         if #tab_str > 0 then
-            tab_str = sendsms(tab_str, ADMIN_TO, OUTGOING)
+            tab_str = sendsms(ADMIN_TO, tab_str, OUTGOING)
         end
         sleep(WAIT_TIME)
     end -- end while
