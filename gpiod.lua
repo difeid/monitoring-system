@@ -3,7 +3,7 @@
 -- Initialization and monitoring gpio
 -- Required io support
 -- Written by DIfeID (difeid@yandex.ru), 2016, Copyleft GPLv3 license
--- Version 0.3
+-- Version 0.4
 
 local d
 if arg[1] == '-d' then
