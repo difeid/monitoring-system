@@ -6,6 +6,9 @@
 -- Written by DIfeID (difeid@yandex.ru), 2016, Copyleft GPLv3 license
 -- Version 0.4
 
+local status = arg[1]
+local path = arg[2]
+
 local ADMIN_FROM = {'79520405261','79509465765'}
 local PASSWORD = 'goodlife'
 local GPIO_NUMBER = {20,21}
@@ -80,9 +83,6 @@ end
 
 -- MAIN chunk
 do
-    local status = arg[1]
-    local path = arg[2]
-    
     if status == 'RECEIVED' then
         -- RECEIVED
         local from, text = readtext(path)
