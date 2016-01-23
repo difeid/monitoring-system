@@ -5,9 +5,16 @@
 -- Written by DIfeID (difeid@yandex.ru), 2016, Copyleft GPLv3 license
 -- Version 0.3
 
-local IN_GPIO = {18,19}
-local IN_NAME = {'door','power'}
-local OUT_GPIO = {20,21,22}
+local d
+if arg[1] == '-d' then
+    d = true
+else
+    d = false
+end
+
+local IN_GPIO = {18,20}
+local IN_NAME = {'button 1','button 2'}
+local OUT_GPIO = {21}
 local WAIT_TIME = '3s'
 local TMP_FILE = '/var/tmp/gpiod.tmp'
 local ADMIN_TO = {'79520405261','79509465765'}
@@ -17,10 +24,12 @@ local function initgpio(in_gpio, out_gpio)
     for _,in_number in ipairs(in_gpio) do
         os.execute('echo '..in_number..' > /sys/class/gpio/export')
         os.execute('echo in > /sys/class/gpio/gpio'..in_number..'/direction')
+        if d then print('gpio'..in_number..' in') end
     end
     for _,out_number in ipairs(out_gpio) do
         os.execute('echo '..out_number..' > /sys/class/gpio/export')
         os.execute('echo out > /sys/class/gpio/gpio'..out_number..'/direction')
+        if d then print('gpio'..in_number..' out') end
     end
 end
 
@@ -30,6 +39,7 @@ local function readgpio(gpio_number)
     if file then
         text = file:read('*n')
         file:close()
+        if d then print('gpio'..gpio_number..' '..text) end
     end
     return text
 end
@@ -48,11 +58,13 @@ local function readfile(path, count)
             table.insert(tab, state)
         end
         file:close()
+        if d then print('readfile '..path..' OK') end
     end
     if #tab < count then
         for _ = 1,count do
             table.insert(tab, 0)
         end
+        if d then print('create empty tab') end
     end
     return tab
 end
@@ -67,26 +79,28 @@ local function savefile(path, tab, name)
         end
         file:flush()
         file:close()
+        if d then print('savefile '..path..' OK') end
     end
 end
 
-local function sendsms(tab_str, admin_to, outgoing)
-    for _, admin in ipairs(admin_to) do
-        local pathsms = os.date('/var/tmp/'..admin..'_%d_%b_%X')
+local function sendsms(admin_to, t_str, outgoing)
+    for _, to in ipairs(admin_to) do
+        local pathsms = os.date('/var/tmp/'..to..'_%d_%b_%X')
         local file = io.open(path,'w')
         if file then
-            file:write('To: '..admin..'\n\n')
-            for i = 1,#tab_str do
-                file:write(tab_str[i])
+            file:write('To: '..to..'\n\n')
+            for i = 1,#t_str do
+                file:write(t_str[i])
             end
-            file:write(os.date(%X))
+            file:write(os.date('%X'))
             file:flush()
             file:close()
             os.execute('mv '..pathsms..' '..outgoing)
+            if d then print('sendsms to '..to..' OK') end
         end
     end
-    tab_str = {}
-    return tab_str
+    t_str = {}
+    return t_str
 end
 
 
@@ -107,19 +121,20 @@ do
                     tab[i] = 0
                     -- Send SMS (IN_MAME[i] OK)
                     table.insert(tab_str, string.format('%s %s',IN_NAME[i],'OK\n'))
-                    savefile(TMP_FILE, tab, IN_NAME)
+                    if d then print('change status: gpio'..IN_GPIO[i]..' OK') end
                 end
             else
                 if tab[i] == 0 then
                     tab[i] = 1
                     -- Send SMS (IN_MAME[i] FAIL)
                     table.insert(tab_str, string.format('%s %s',IN_NAME[i],'FAIL\n'))
-                    savefile(TMP_FILE, tab, IN_NAME)
+                    if d then print('change status: gpio'..IN_GPIO[i]..' FAIL') end
                 end
             end
         end
         if #tab_str > 0 then
-            tab_str = sendsms(tab_str, ADMIN_TO, OUTGOING)
+            savefile(TMP_FILE, tab, IN_NAME)
+            tab_str = sendsms(ADMIN_TO, tab_str, OUTGOING)
         end
         sleep(WAIT_TIME)
     end -- end while
