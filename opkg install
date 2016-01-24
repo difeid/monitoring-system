@@ -12,3 +12,4 @@ smstools3
 terminfo
 libncurses
 screen
+netcat

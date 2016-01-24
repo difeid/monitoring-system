@@ -18,7 +18,7 @@ local function testping(addr)
 end
 
 local function testnc(addr, port)
-    return os.execute('nc -zw 5 '..addr..' '..port)
+    return os.execute('netcat -zw 5 '..addr..' '..port)
 end
 
 local function sleep(s)
