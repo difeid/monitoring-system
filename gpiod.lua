@@ -5,13 +5,7 @@
 -- Written by DIfeID (difeid@yandex.ru), 2016, Copyleft GPLv3 license
 -- Version 0.4
 
-local d
-if arg[1] == '-d' then
-    d = true
-else
-    d = false
-end
-
+local DEBUG = true
 local IN_GPIO = {18,20}
 local IN_NAME = {'button 1','button 2'}
 local OUT_GPIO = {21}
@@ -24,12 +18,12 @@ local function initgpio(in_gpio, out_gpio)
     for _,in_number in ipairs(in_gpio) do
         os.execute('echo '..in_number..' > /sys/class/gpio/export')
         os.execute('echo in > /sys/class/gpio/gpio'..in_number..'/direction')
-        if d then print('gpio'..in_number..' in') end
+        if DEBUG then print('gpio'..in_number..' in') end
     end
     for _,out_number in ipairs(out_gpio) do
         os.execute('echo '..out_number..' > /sys/class/gpio/export')
         os.execute('echo out > /sys/class/gpio/gpio'..out_number..'/direction')
-        if d then print('gpio'..in_number..' out') end
+        if DEBUG then print('gpio'..in_number..' out') end
     end
 end
 
@@ -39,7 +33,7 @@ local function readgpio(gpio_number)
     if file then
         text = file:read('*n')
         file:close()
-        if d then print('gpio'..gpio_number..' '..text) end
+        if DEBUG then print('gpio'..gpio_number..' '..text) end
     end
     return text
 end
@@ -58,13 +52,13 @@ local function readfile(path, count)
             table.insert(tab, state)
         end
         file:close()
-        if d then print('readfile '..path..' OK') end
+        if DEBUG then print('readfile '..path..' OK') end
     end
     if #tab < count then
         for _ = 1,count do
             table.insert(tab, 0)
         end
-        if d then print('create empty tab') end
+        if DEBUG then print('create empty tab') end
     end
     return tab
 end
@@ -79,7 +73,7 @@ local function savefile(path, tab, name)
         end
         file:flush()
         file:close()
-        if d then print('savefile '..path..' OK') end
+        if DEBUG then print('savefile '..path..' OK') end
     end
 end
 
@@ -96,7 +90,7 @@ local function sendsms(admin_to, t_str, outgoing)
             file:flush()
             file:close()
             os.execute('mv '..pathsms..' '..outgoing)
-            if d then print('sendsms to '..to..' OK') end
+            if DEBUG then print('sendsms to '..to..' OK') end
         end
     end
     t_str = {}
@@ -121,14 +115,14 @@ do
                     tab[i] = 0
                     -- Send SMS (IN_MAME[i] OK)
                     table.insert(tab_str, string.format('%s %s',IN_NAME[i],'OK\n'))
-                    if d then print('change status: gpio'..IN_GPIO[i]..' OK') end
+                    if DEBUG then print('change status: gpio'..IN_GPIO[i]..' OK') end
                 end
             else
                 if tab[i] == 0 then
                     tab[i] = 1
                     -- Send SMS (IN_MAME[i] FAIL)
                     table.insert(tab_str, string.format('%s %s',IN_NAME[i],'FAIL\n'))
-                    if d then print('change status: gpio'..IN_GPIO[i]..' FAIL') end
+                    if DEBUG then print('change status: gpio'..IN_GPIO[i]..' FAIL') end
                 end
             end
         end

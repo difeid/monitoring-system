@@ -5,13 +5,7 @@
 -- Written by DIfeID (difeid@yandex.ru), 2016, Copyleft GPLv3 license
 -- Version 0.5
 
-local d
-if arg[1] == '-d' then
-    d = true
-else
-    d = false
-end
-
+local DEBUG = true
 local ADDRESS = {'n 192.168.100.1:80','p 192.168.8.245','p 8.8.8.8','ya.ru'}
 local ADDR_NAME = {'TP LINK','notebook','IP google','ya.ru'}
 local WAIT_TIME = '5m' -- 5 min
@@ -42,13 +36,13 @@ local function readfile(path, count)
             table.insert(tab, state)
         end
         file:close()
-        if d then print('readfile '..path..' OK') end
+        if DEBUG then print('readfile '..path..' OK') end
     end
     if #tab < count then
         for _ = 1,count do
             table.insert(tab, 0)
         end
-        if d then print('create empty tab') end
+        if DEBUG then print('create empty tab') end
     end
     return tab
 end
@@ -63,7 +57,7 @@ local function savefile(path, tab, name)
         end
         file:flush()
         file:close()
-        if d then print('savefile '..path..' OK') end
+        if DEBUG then print('savefile '..path..' OK') end
     end
 end
 
@@ -80,7 +74,7 @@ local function sendsms(admin_to, t_str, outgoing)
             file:flush()
             file:close()
             os.execute('mv '..pathsms..' '..outgoing)
-            if d then print('sendsms to '..to..' OK') end
+            if DEBUG then print('sendsms to '..to..' OK') end
         end
     end
     t_str = {}
@@ -111,15 +105,15 @@ do
                     port = '80'
                 end
                 test_return = testnc(address, port)
-                if d then print(method, address, port, test_return) end
+                if DEBUG then print(method, address, port, test_return) end
             elseif method == 'p' then
                 test_return = testping(address)
-                if d then print(method, address, test_return) end
+                if DEBUG then print(method, address, test_return) end
             else
                 address = value
                 print(address)
                 test_return = testping(address)
-                if d then print(address, test_return) end
+                if DEBUG then print(address, test_return) end
             end -- end if method
             
             if test_return then
@@ -130,7 +124,7 @@ do
                         is_work[i] = true
                         -- Send SMS (ADDR_NAME[i] OK)
                         table.insert(tab_str, string.format('%s %s:%s %s',ADDR_NAME[i],address,port,'OK\n'))
-                        if d then print(string.format('%s %s:%s %s',ADDR_NAME[i],address,port,'OK')) end
+                        if DEBUG then print(string.format('%s %s:%s %s',ADDR_NAME[i],address,port,'OK')) end
                     end
                 end
             else
@@ -141,7 +135,7 @@ do
                         is_work[i] = false
                         -- Send SMS (ADDR_NAME[i] FAIL)
                         table.insert(tab_str, string.format('%s %s:%s %s',ADDR_NAME[i],address,port,'FAIL\n'))
-                        if d then print(string.format('%s %s:%s %s',ADDR_NAME[i],address,port,'FAIL')) end
+                        if DEBUG then print(string.format('%s %s:%s %s',ADDR_NAME[i],address,port,'FAIL')) end
                     end
                 end
             end
