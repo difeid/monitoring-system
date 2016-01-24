@@ -1,29 +1,34 @@
 #!/usr/bin/env lua
 
 -- Eventhandler for SMS Tools 3
--- Required iconv, io support
+-- Required iconv, io, awk, grep, kill support
 -- Add eventhandler=/path/to/eventsms into global part of smsd.conf
 -- Written by DIfeID (difeid@yandex.ru), 2016, Copyleft GPLv3 license
--- Version 0.4
+-- Version 0.5
 
 local status = arg[1]
 local path = arg[2]
 
 local ADMIN_FROM = {'79520405261','79509465765'}
 local PASSWORD = 'goodlife'
-local GPIO_NUMBER = {20,21}
+local GPIO_NUMBER = {21,22}
 local GPIO_NAME = {'relay','router'}
-local OUTGOING = '/var/spool/sms/outgoing'
+-- local OUTGOING = '/var/spool/sms/outgoing/'
+local OUTGOING = '/home/difeid/'
     
 local function capture(cmd)
-    local file = assert(io.popen(cmd, 'r'))
+    local file = assert(io.popen(cmd,'r'))
     local str = assert(file:read('*a'))
     file:close()
     return str
 end
 
+local function sleep(s)
+    os.execute('sleep '..s)
+end
+
 local function readtext(path)
-    local file = io.open(path, 'r')
+    local file = io.open(path,'r')
     local form
     local alphabet
     local text
@@ -69,12 +74,19 @@ local function checkpass(text, password)
     end
 end
 
-local function sendsms(to, str, outgoing)
+local function sendsms(to,t_str,outgoing)
     local pathsms = os.date('/var/tmp/'..to..'_%d_%b_%X')
-    local file = io.open(path,'w')
+    local file = io.open(pathsms,'w')
     if file then
         file:write('To: '..to..'\n\n')
-        file:write(str)
+        if #t_str == 0 then
+            file:write('Command not found\n')
+        else
+            for i = 1,#t_str do
+                file:write(t_str[i]..'\n')
+            end
+        end
+        file:write(os.date('%X'))
         file:flush()
         file:close()
         os.execute('mv '..pathsms..' '..outgoing)
@@ -95,34 +107,35 @@ do
         
         -- Execute command
         if cmd then
-            cmd = string.lower(cmd)
-            local out
+            local cmd_return
+            local out = {}
             
+            cmd = string.lower(cmd)
             for i = 1,#GPIO_NUMBER do
-                if string.match(cmd, GPIO_NAME[i]..' off') then
-                    _,_,out = os.execute('echo 1 > /sys/class/gpio/gpio'..GPIO_NUMBER[i]..'/value')
-                elseif string.match(cmd, GPIO_NAME[i]..' on') then
-                    _,_,out = os.execute('echo 0 > /sys/class/gpio/gpio'..GPIO_NUMBER[i]..'/value')
+                if string.match(cmd, GPIO_NAME[i]..' off[^%-]') then
+                    _,_,cmd_return = os.execute('echo 1 > /sys/class/gpio/gpio'..GPIO_NUMBER[i]..'/value')
+                    table.insert(out, GPIO_NAME[i]..' off '..cmd_return)
+                elseif string.match(cmd, GPIO_NAME[i]..' on[^%-]') then
+                    _,_,cmd_return = os.execute('echo 0 > /sys/class/gpio/gpio'..GPIO_NUMBER[i]..'/value')
+                    table.insert(out, GPIO_NAME[i]..' on '..cmd_return)
+                elseif string.match(cmd, GPIO_NAME[i]..' off%-on') then
+                    _,_,cmd_return = os.execute('echo 1 > /sys/class/gpio/gpio'..GPIO_NUMBER[i]..'/value')
+                    sleep('5s')
+                    _,_,cmd_return = os.execute('echo 0 > /sys/class/gpio/gpio'..GPIO_NUMBER[i]..'/value')
+                    table.insert(out, GPIO_NAME[i]..' off-on '..cmd_return)
                 end
             end
             
             if string.match(cmd, 'state') then
                 -- _,_,out = os.execute('uptime')
+                -- table.insert(tab_out, out)
             elseif string.match(cmd, 'stop') then
-                -- отследить pid процессов
-                _,_,out = os.execute('/etc/init.d/smstools stop')
+                os.execute('kill $(pidof lua) && /etc/init.d/smstools stop')
             elseif string.match(cmd, 'reboot') then
-                _,_,out = os.execute('reboot')
+                os.execute('reboot')
             end
-
-            if out == 0 then
-                -- Send SMS true
-                sendsms(from, cmd..' OK', OUTGOING)
-            else
-                -- Send SMS fail
-                sendsms(from, cmd..' FAIL', OUTGOING)
-            end
-            
+            -- Send SMS
+            sendsms(from,out,OUTGOING)
         end
     elseif status == 'SEND' then
         -- SEND
@@ -134,4 +147,4 @@ do
         -- CALL
     end
 end
-os.exit(out)
+os.exit(0)
