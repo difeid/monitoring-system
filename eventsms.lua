@@ -1,20 +1,18 @@
 #!/usr/bin/env lua
 
 -- Eventhandler for SMS Tools 3
--- Required iconv, io, awk, grep, kill support
--- Add eventhandler=/path/to/eventsms into global part of smsd.conf
+-- Add eventhandler=/path/to/eventsms.lua into global part of smsd.conf
 -- Written by DIfeID (difeid@yandex.ru), 2016, Copyleft GPLv3 license
--- Version 0.5
+-- Version 0.6
 
 local status = arg[1]
 local path = arg[2]
 
-local ADMIN_FROM = {'79520405261','79509465765'}
+local ADMIN_FROM = {'79520405261'}
 local PASSWORD = 'goodlife'
-local GPIO_NUMBER = {21,22}
-local GPIO_NAME = {'relay','router'}
--- local OUTGOING = '/var/spool/sms/outgoing/'
-local OUTGOING = '/home/difeid/'
+local GPIO_NUMBER = {21}
+local GPIO_NAME = {'relay'}
+local OUTGOING = '/var/spool/sms/outgoing/'
     
 local function capture(cmd)
     local file = assert(io.popen(cmd,'r'))
@@ -75,7 +73,7 @@ local function checkpass(text, password)
 end
 
 local function sendsms(to,t_str,outgoing)
-    local pathsms = os.date('/var/tmp/'..to..'_%d_%b_%X')
+    local pathsms = os.date('/tmp/'..to..'_%d_%b_%X')
     local file = io.open(pathsms,'w')
     if file then
         file:write('To: '..to..'\n\n')

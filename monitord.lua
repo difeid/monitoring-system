@@ -1,20 +1,17 @@
 #!/usr/bin/env lua
 
--- Monitoring system
--- Required nc, ping, sleep support
+-- Monitoring network system
 -- Written by DIfeID (difeid@yandex.ru), 2016, Copyleft GPLv3 license
 -- Version 0.5
 
 local DEBUG = true
-local ADDRESS = {'n 192.168.100.1:80','p 192.168.8.245','p 8.8.8.8','ya.ru'}
-local ADDR_NAME = {'TP LINK','notebook','IP google','ya.ru'}
+local ADDRESS = {'n 192.168.100.1:80','p 192.168.8.245','ya.ru'}
+local ADDR_NAME = {'TP LINK','notebook','ya.ru'}
 local WAIT_TIME = '30s'
 local ATTEMPTS = 2
--- local TMP_FILE = '/var/tmp/monitor.tmp'
-local TMP_FILE = '/home/difeid/monitor.tmp'
-local ADMIN_TO = {'79520405261','79509465765'}
--- local OUTGOING = '/var/spool/sms/outgoing/'
-local OUTGOING = '/home/difeid/'
+local TMP_FILE = '/tmp/monitor.tmp'
+local ADMIN_TO = {'79520405261'}
+local OUTGOING = '/var/spool/sms/outgoing/'
 
 local function testping(addr)
     return os.execute('ping -qc 1 -w 5 '..addr..' > /dev/null')
@@ -65,7 +62,7 @@ end
 
 local function sendsms(admin_to, t_str, outgoing)
     for _, to in ipairs(admin_to) do
-        local pathsms = os.date('/var/tmp/'..to..'_%d_%b_%X')
+        local pathsms = os.date('/tmp/'..to..'_%d_%b_%X')
         local file = io.open(pathsms,'w')
         if file then
             file:write('To: '..to..'\n\n')

@@ -1,7 +1,6 @@
 #!/usr/bin/env lua
 
 -- Initialization and monitoring gpio
--- Required io support
 -- Written by DIfeID (difeid@yandex.ru), 2016, Copyleft GPLv3 license
 -- Version 0.5
 
@@ -10,11 +9,9 @@ local IN_GPIO = {18,20}
 local IN_NAME = {'button 1','button 2'}
 local OUT_GPIO = {21}
 local WAIT_TIME = '3s'
--- local TMP_FILE = '/var/tmp/gpiod.tmp'
-local TMP_FILE = '/home/difeid/gpiod.tmp'
-local ADMIN_TO = {'79520405261','79509465765'}
--- local OUTGOING = '/var/spool/sms/outgoing/'
-local OUTGOING = '/home/difeid/'
+local TMP_FILE = '/tmp/gpiod.tmp'
+local ADMIN_TO = {'79520405261'}
+local OUTGOING = '/var/spool/sms/outgoing/'
 
 local function initgpio(in_gpio, out_gpio)
     for _,in_number in ipairs(in_gpio) do
@@ -81,7 +78,7 @@ end
 
 local function sendsms(admin_to, t_str, outgoing)
     for _, to in ipairs(admin_to) do
-        local pathsms = os.date('/var/tmp/'..to..'_%d_%b_%X')
+        local pathsms = os.date('/tmp/'..to..'_%d_%b_%X')
         local file = io.open(pathsms,'w')
         if file then
             file:write('To: '..to..'\n\n')
