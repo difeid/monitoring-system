@@ -105,22 +105,21 @@ do
         
         -- Execute command
         if cmd then
-            local cmd_return
             local out = {}
             
             cmd = string.lower(cmd)
             for i = 1,#GPIO_NUMBER do
-                if string.match(cmd, GPIO_NAME[i]..' off[^%-]') then
-                    _,_,cmd_return = os.execute('echo 1 > /sys/class/gpio/gpio'..GPIO_NUMBER[i]..'/value')
-                    table.insert(out, GPIO_NAME[i]..' off '..cmd_return)
-                elseif string.match(cmd, GPIO_NAME[i]..' on[^%-]') then
-                    _,_,cmd_return = os.execute('echo 0 > /sys/class/gpio/gpio'..GPIO_NUMBER[i]..'/value')
-                    table.insert(out, GPIO_NAME[i]..' on '..cmd_return)
+                if string.match(cmd, GPIO_NAME[i]..' off[^%-]?') then
+                    os.execute('echo 1 > /sys/class/gpio/gpio'..GPIO_NUMBER[i]..'/value')
+                    table.insert(out, GPIO_NAME[i]..' off')
+                elseif string.match(cmd, GPIO_NAME[i]..' on[^%-]?') then
+                    os.execute('echo 0 > /sys/class/gpio/gpio'..GPIO_NUMBER[i]..'/value')
+                    table.insert(out, GPIO_NAME[i]..' on')
                 elseif string.match(cmd, GPIO_NAME[i]..' off%-on') then
-                    _,_,cmd_return = os.execute('echo 1 > /sys/class/gpio/gpio'..GPIO_NUMBER[i]..'/value')
+                    os.execute('echo 1 > /sys/class/gpio/gpio'..GPIO_NUMBER[i]..'/value')
                     sleep('5s')
-                    _,_,cmd_return = os.execute('echo 0 > /sys/class/gpio/gpio'..GPIO_NUMBER[i]..'/value')
-                    table.insert(out, GPIO_NAME[i]..' off-on '..cmd_return)
+                    os.execute('echo 0 > /sys/class/gpio/gpio'..GPIO_NUMBER[i]..'/value')
+                    table.insert(out, GPIO_NAME[i]..' off-on')
                 end
             end
             
