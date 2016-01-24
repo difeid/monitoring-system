@@ -10,9 +10,11 @@ local IN_GPIO = {18,20}
 local IN_NAME = {'button 1','button 2'}
 local OUT_GPIO = {21}
 local WAIT_TIME = '3s'
-local TMP_FILE = '/var/tmp/gpiod.tmp'
+-- local TMP_FILE = '/var/tmp/gpiod.tmp'
+local TMP_FILE = '/home/difeid/gpiod.tmp'
 local ADMIN_TO = {'79520405261','79509465765'}
-local OUTGOING = '/var/spool/sms/outgoing'
+-- local OUTGOING = '/var/spool/sms/outgoing/'
+local OUTGOING = '/home/difeid/'
 
 local function initgpio(in_gpio, out_gpio)
     for _,in_number in ipairs(in_gpio) do
@@ -23,7 +25,7 @@ local function initgpio(in_gpio, out_gpio)
     for _,out_number in ipairs(out_gpio) do
         os.execute('echo '..out_number..' > /sys/class/gpio/export')
         os.execute('echo out > /sys/class/gpio/gpio'..out_number..'/direction')
-        if DEBUG then print('gpio'..in_number..' out') end
+        if DEBUG then print('gpio'..out_number..' out') end
     end
 end
 
