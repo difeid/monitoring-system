@@ -3,10 +3,17 @@
 -- Monitoring system
 -- Required nc, ping, sleep support
 -- Written by DIfeID (difeid@yandex.ru), 2016, Copyleft GPLv3 license
--- Version 0.2
+-- Version 0.4
 
-local ADDRESS = {'n 192.168.100.1:80','n 192.168.100.001:82','n 192.168.100.2','192.168.100.1'}
-local ADDR_NAME = {'CAM 1','CAM DOOR','CAM 3','ROUTER'}
+local d
+if arg[1] == '-d' then
+    d = true
+else
+    d = false
+end
+
+local ADDRESS = {'n 192.168.100.1:80','p 192.168.8.245','p 8.8.8.8','ya.ru'}
+local ADDR_NAME = {'TP LINK','notebook','IP google','ya.ru'}
 local WAIT_TIME = '5m' -- 5 min
 local ATTEMPTS = 2
 local TMP_FILE = '/var/tmp/monitor.tmp'
@@ -14,7 +21,7 @@ local ADMIN_TO = {'79520405261','79509465765'}
 local OUTGOING = '/var/spool/sms/outgoing'
 
 local function testping(addr)
-    return os.execute('ping -qc 2 -w 5 '..addr)
+    return os.execute('ping -qc 1 -w 5 '..addr)
 end
 
 local function testnc(addr, port)
@@ -66,7 +73,7 @@ local function sendsms(admin_to, t_str, outgoing)
             for i = 1,#t_str do
                 file:write(t_str[i])
             end
-            file:write(os.date(%X))
+            file:write(os.date('%X'))
             file:flush()
             file:close()
             os.execute('mv '..pathsms..' '..outgoing)
@@ -94,42 +101,44 @@ do
     while(true) do
         is_changes = false
         for i,value in ipairs(ADDRESS) do
-            method, address, port = string.match(value,'(%a?)%s?(%d+%.%d+%.%d+%.%d+):?(%d*)')
-            -- print(method, address, port)
-            if address then
-                if method == 'n' then
-                    if port == '' then
-                        port = '80'
-                    end
-                    test_return = testnc(address, port)
-                else
-                    test_return = testping(address)
-                end -- end if method
-                
-                if test_return then
-                    -- ok
-                    if tab[i] > 0 then
-                        tab[i] = tab[i] - 1
-                        if ((tab[i] == 0) and (not is_work[i])) then
-                            is_work[i] = true
-                            -- Send SMS (ADDR_NAME[i] OK)
-                            table.insert(tab_str, string.format('%s %s:%s %s',ADDR_NAME[i],address,port,'OK\n'))
-                            savefile(TMP_FILE, tab, ADDR_NAME)
-                        end
-                    end
-                else
-                    -- fail
-                    if tab[i] < ATTEMPTS then
-                        tab[i] = tab[i] + 1
-                        if ((tab[i] == ATTEMPTS) and is_work[i]) then
-                            is_work[i] = false
-                            -- Send SMS (ADDR_NAME[i] FAIL)
-                            table.insert(tab_str, string.format('%s %s:%s %s',ADDR_NAME[i],address,port,'FAIL\n'))
-                            savefile(TMP_FILE, tab, ADDR_NAME)
-                        end
+            method, address, port = string.match(value,'(%a)%s(%d+%.%d+%.%d+%.%d+):?(%d*)')
+            print(method, address, port)
+            if method == 'n' then
+                if port == '' then
+                    port = '80'
+                end
+                test_return = testnc(address, port)
+            elseif method == 'p' then
+                test_return = testping(address)
+            else
+                address = value
+                print(address)
+                test_return = testping(address)
+            end -- end if method
+            
+            if test_return then
+                -- ok
+                if tab[i] > 0 then
+                    tab[i] = tab[i] - 1
+                    if ((tab[i] == 0) and (not is_work[i])) then
+                        is_work[i] = true
+                        -- Send SMS (ADDR_NAME[i] OK)
+                        table.insert(tab_str, string.format('%s %s:%s %s',ADDR_NAME[i],address,port,'OK\n'))
+                        savefile(TMP_FILE, tab, ADDR_NAME)
                     end
                 end
-            end -- end if address
+            else
+                -- fail
+                if tab[i] < ATTEMPTS then
+                    tab[i] = tab[i] + 1
+                    if ((tab[i] == ATTEMPTS) and is_work[i]) then
+                        is_work[i] = false
+                        -- Send SMS (ADDR_NAME[i] FAIL)
+                        table.insert(tab_str, string.format('%s %s:%s %s',ADDR_NAME[i],address,port,'FAIL\n'))
+                        savefile(TMP_FILE, tab, ADDR_NAME)
+                    end
+                end
+            end
         end -- end for
         if #tab_str > 0 then
             tab_str = sendsms(ADMIN_TO, tab_str, OUTGOING)
