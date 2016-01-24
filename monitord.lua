@@ -15,7 +15,7 @@ local ADMIN_TO = {'79520405261','79509465765'}
 local OUTGOING = '/var/spool/sms/outgoing'
 
 local function testping(addr)
-    return os.execute('ping -qc 1 -w 5 '..addr)
+    return os.execute('ping -qc 1 -w 5 '..addr..' > /dev/null')
 end
 
 local function testnc(addr, port)
@@ -31,9 +31,9 @@ local function readfile(path, count)
     local file = io.open(path,'r')
     local state
     if file then
-        for line in file.lines() do
+        for line in file:lines() do
             state = string.match(line,'^(%d)')
-            table.insert(tab, state)
+            table.insert(tab, tonumber(state))
         end
         file:close()
         if DEBUG then print('readfile '..path..' OK') end
@@ -64,7 +64,7 @@ end
 local function sendsms(admin_to, t_str, outgoing)
     for _, to in ipairs(admin_to) do
         local pathsms = os.date('/var/tmp/'..to..'_%d_%b_%X')
-        local file = io.open(path,'w')
+        local file = io.open(pathsms,'w')
         if file then
             file:write('To: '..to..'\n\n')
             for i = 1,#t_str do
@@ -90,8 +90,12 @@ do
     local port
     local test_return
     local is_work = {}
-    for _ = 1,#ADDRESS do
-        table.insert(is_work, true)
+    for i = 1,#ADDRESS do
+        if tab[i] == 0 then
+            table.insert(is_work, true)
+        else
+            table.insert(is_work, false)
+        end
     end
     
     savefile(TMP_FILE, tab, ADDR_NAME)
@@ -111,7 +115,6 @@ do
                 if DEBUG then print(method, address, test_return) end
             else
                 address = value
-                print(address)
                 test_return = testping(address)
                 if DEBUG then print(address, test_return) end
             end -- end if method
