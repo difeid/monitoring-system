@@ -2,7 +2,7 @@
 
 -- Monitoring network system
 -- Written by DIfeID (difeid@yandex.ru), 2016, Copyleft GPLv3 license
--- Version 0.5
+-- Version 0.6
 
 local DEBUG = true
 local ADDRESS = {'n 192.168.100.1:80','p 192.168.8.245','ya.ru'}
