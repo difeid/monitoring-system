@@ -35,8 +35,8 @@ local function readgpio(gpio_number)
     if file then
         text = file:read('*n')
         file:close()
-        if DEBUG then print('gpio'..gpio_number..' '..text) end
     end
+    if DEBUG then print(gpio_number,text) end
     return text
 end
 
@@ -117,14 +117,14 @@ do
                     tab[i] = 0
                     -- Send SMS (IN_MAME[i] OK)
                     table.insert(tab_str, string.format('%s %s',IN_NAME[i],'OK\n'))
-                    if DEBUG then print('change status: gpio'..IN_GPIO[i]..' OK') end
+                    if DEBUG then print('gpio'..IN_GPIO[i]..' OK') end
                 end
             else
                 if tab[i] == 0 then
                     tab[i] = 1
                     -- Send SMS (IN_MAME[i] FAIL)
                     table.insert(tab_str, string.format('%s %s',IN_NAME[i],'FAIL\n'))
-                    if DEBUG then print('change status: gpio'..IN_GPIO[i]..' FAIL') end
+                    if DEBUG then print('gpio'..IN_GPIO[i]..' FAIL') end
                 end
             end
         end
