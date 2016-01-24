@@ -3,7 +3,7 @@
 -- Initialization and monitoring gpio
 -- Required io support
 -- Written by DIfeID (difeid@yandex.ru), 2016, Copyleft GPLv3 license
--- Version 0.4
+-- Version 0.5
 
 local DEBUG = true
 local IN_GPIO = {18,20}
@@ -47,9 +47,9 @@ local function readfile(path, count)
     local file = io.open(path,'r')
     local state
     if file then
-        for line in file.lines() do
+        for line in file:lines() do
             state = string.match(line,'^(%d)')
-            table.insert(tab, state)
+            table.insert(tab, tonumber(state))
         end
         file:close()
         if DEBUG then print('readfile '..path..' OK') end
@@ -80,7 +80,7 @@ end
 local function sendsms(admin_to, t_str, outgoing)
     for _, to in ipairs(admin_to) do
         local pathsms = os.date('/var/tmp/'..to..'_%d_%b_%X')
-        local file = io.open(path,'w')
+        local file = io.open(pathsms,'w')
         if file then
             file:write('To: '..to..'\n\n')
             for i = 1,#t_str do
