@@ -3,11 +3,12 @@
 -- Eventhandler for SMS Tools 3
 -- Add eventhandler=/path/to/eventsms.lua into global part of smsd.conf
 -- Written by DIfeID (difeid@yandex.ru), 2016, Copyleft GPLv3 license
--- Version 0.6
+-- Version 0.7
 
 local status = arg[1]
 local path = arg[2]
 
+local DEBUG = true
 local ADMIN_FROM = {'79520405261'}
 local PASSWORD = 'goodlife'
 local GPIO_NUMBER = {21}
@@ -48,15 +49,18 @@ local function readtext(path)
         text = string.gsub(text, '^%s+', '')
         text = string.gsub(text, '%s+$', '')
     end -- if file
+    if DEBUG then print(from, alphabet, text) end
     return from, text
 end
 
 local function checkfrom(from, admin_from)
     for _, admin in ipairs(admin_from) do
         if from == admin then
+            if DEBUG then print('from is admin') end
             return true
         end
     end
+    if DEBUG then print('from is not admin') end
     return false
 end
 
@@ -66,8 +70,10 @@ local function checkpass(text, password)
         b = b + 1
         text = string.sub(text, b)
         text = string.gsub(text, '^%s+', '')
+        if DEBUG then print('password correct') end
         return text
     else
+        if DEBUG then print('password incorrect') end
         return false
     end
 end
@@ -88,6 +94,7 @@ local function sendsms(to,t_str,outgoing)
         file:flush()
         file:close()
         os.execute('mv '..pathsms..' '..outgoing)
+        if DEBUG then print('sendsms to '..to..' OK') end
     end
 end
 
@@ -95,6 +102,7 @@ end
 do
     if status == 'RECEIVED' then
         -- RECEIVED
+        if DEBUG then print('sms received') end
         local from, text = readtext(path)
         local cmd = checkpass(text, PASSWORD)
         if not cmd then
@@ -106,8 +114,9 @@ do
         -- Execute command
         if cmd then
             local out = {}
-            
             cmd = string.lower(cmd)
+            if DEBUG then print(cmd) end
+            
             for i = 1,#GPIO_NUMBER do
                 if string.match(cmd, GPIO_NAME[i]..' off[^%-]?') then
                     os.execute('echo 1 > /sys/class/gpio/gpio'..GPIO_NUMBER[i]..'/value')
