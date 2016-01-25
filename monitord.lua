@@ -14,11 +14,11 @@ local ADMIN_TO = {'79500000000'}
 local OUTGOING = '/var/spool/sms/outgoing/'
 
 local function testping(addr)
-    return os.execute('ping -qc 1 -w 5 '..addr..' > /dev/null')
+    return os.execute('ping -qc 1 -w 5 '..addr..' &> /dev/null')
 end
 
 local function testnc(addr, port)
-    return os.execute('netcat -zw 5 '..addr..' '..port)
+    return os.execute('netcat -zw 5 '..addr..' '..port..' &> /dev/null')
 end
 
 local function sleep(s)
