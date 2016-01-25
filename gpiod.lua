@@ -2,15 +2,15 @@
 
 -- Initialization and monitoring gpio
 -- Written by DIfeID (difeid@yandex.ru), 2016, Copyleft GPLv3 license
--- Version 0.5
+-- Version 1.0
 
-local DEBUG = true
+local DEBUG = false
 local IN_GPIO = {18,20}
 local IN_NAME = {'button 1','button 2'}
 local OUT_GPIO = {21}
-local WAIT_TIME = '3s'
-local TMP_FILE = '/tmp/gpiod.tmp'
-local ADMIN_TO = {'79520405261'}
+local WAIT_TIME = '1s'
+local STATE_FILE = '/usr/local/etc/gpiod'
+local ADMIN_TO = {'79500000000'}
 local OUTGOING = '/var/spool/sms/outgoing/'
 
 local function initgpio(in_gpio, out_gpio)
@@ -99,11 +99,11 @@ end
 
 -- MAIN chunk
 do
-    local tab = readfile(TMP_FILE, #IN_GPIO)
+    local tab = readfile(STATE_FILE, #IN_GPIO)
     local result
     local tab_str = {}
     
-    savefile(TMP_FILE, tab, IN_NAME)
+    savefile(STATE_FILE, tab, IN_NAME)
     initgpio(IN_GPIO, OUT_GPIO)
     
     while(true) do
@@ -126,7 +126,7 @@ do
             end
         end
         if #tab_str > 0 then
-            savefile(TMP_FILE, tab, IN_NAME)
+            savefile(STATE_FILE, tab, IN_NAME)
             tab_str = sendsms(ADMIN_TO, tab_str, OUTGOING)
         end
         sleep(WAIT_TIME)

@@ -2,15 +2,15 @@
 
 -- Monitoring network system
 -- Written by DIfeID (difeid@yandex.ru), 2016, Copyleft GPLv3 license
--- Version 0.6
+-- Version 1.0
 
-local DEBUG = true
+local DEBUG = false
 local ADDRESS = {'n 192.168.100.1:80','p 192.168.8.245','ya.ru'}
 local ADDR_NAME = {'TP LINK','notebook','ya.ru'}
-local WAIT_TIME = '30s'
+local WAIT_TIME = '10m'
 local ATTEMPTS = 2
-local TMP_FILE = '/tmp/monitor.tmp'
-local ADMIN_TO = {'79520405261'}
+local STATE_FILE = '/usr/local/etc/monitord'
+local ADMIN_TO = {'79500000000'}
 local OUTGOING = '/var/spool/sms/outgoing/'
 
 local function testping(addr)
@@ -82,7 +82,7 @@ end
 
 -- MAIN chunk
 do
-    local tab = readfile(TMP_FILE, #ADDRESS)
+    local tab = readfile(STATE_FILE, #ADDRESS)
     local tab_str = {}
     local method
     local address
@@ -97,7 +97,7 @@ do
         end
     end
     
-    savefile(TMP_FILE, tab, ADDR_NAME)
+    savefile(STATE_FILE, tab, ADDR_NAME)
 
     while(true) do
         is_changes = false
@@ -143,7 +143,7 @@ do
             end
         end -- end for
         if #tab_str > 0 then
-            savefile(TMP_FILE, tab, ADDR_NAME)
+            savefile(STATE_FILE, tab, ADDR_NAME)
             tab_str = sendsms(ADMIN_TO, tab_str, OUTGOING)
         end
         sleep(WAIT_TIME)

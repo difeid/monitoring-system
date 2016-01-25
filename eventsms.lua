@@ -3,13 +3,13 @@
 -- Eventhandler for SMS Tools 3
 -- Add eventhandler=/path/to/eventsms.lua into global part of smsd.conf
 -- Written by DIfeID (difeid@yandex.ru), 2016, Copyleft GPLv3 license
--- Version 0.7
+-- Version 1.0
 
 local status = arg[1]
 local path = arg[2]
 
 local DEBUG = true
-local ADMIN_FROM = {'79520405261'}
+local ADMIN_FROM = {'79500000000'}
 local PASSWORD = 'goodlife'
 local GPIO_NUMBER = {21}
 local GPIO_NAME = {'relay'}
