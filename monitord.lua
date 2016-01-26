@@ -2,7 +2,7 @@
 
 -- Monitoring network system
 -- Written by DIfeID (difeid@yandex.ru), 2016, Copyleft GPLv3 license
--- Version 1.0
+-- Version 1.1
 
 local DEBUG = false
 local ADDRESS = {'n 192.168.100.1:80','p 192.168.8.245','ya.ru'}
@@ -118,15 +118,15 @@ do
                 if DEBUG then print(address, test_return) end
             end -- end if method
             
-            if test_return then
+            if test_return == 0 then
                 -- ok
                 if tab[i] > 0 then
                     tab[i] = tab[i] - 1
                     if ((tab[i] == 0) and (not is_work[i])) then
                         is_work[i] = true
                         -- Send SMS (ADDR_NAME[i] OK)
-                        table.insert(tab_str, string.format('%s %s:%s %s',ADDR_NAME[i],address,port,'OK\n'))
-                        if DEBUG then print(string.format('%s %s:%s %s',ADDR_NAME[i],address,port,'OK')) end
+                        table.insert(tab_str, ADDR_NAME[i]..' OK\n')
+                        if DEBUG then print(ADDR_NAME[i]..' OK') end
                     end
                 end
             else
@@ -136,8 +136,8 @@ do
                     if ((tab[i] == ATTEMPTS) and is_work[i]) then
                         is_work[i] = false
                         -- Send SMS (ADDR_NAME[i] FAIL)
-                        table.insert(tab_str, string.format('%s %s:%s %s',ADDR_NAME[i],address,port,'FAIL\n'))
-                        if DEBUG then print(string.format('%s %s:%s %s',ADDR_NAME[i],address,port,'FAIL')) end
+                        table.insert(tab_str, ADDR_NAME[i]..' FAIL\n')
+                        if DEBUG then print(ADDR_NAME[i]..' FAIL') end
                     end
                 end
             end

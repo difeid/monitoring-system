@@ -3,7 +3,7 @@
 -- Eventhandler for SMS Tools 3
 -- Add eventhandler=/path/to/eventsms.lua into global part of smsd.conf
 -- Written by DIfeID (difeid@yandex.ru), 2016, Copyleft GPLv3 license
--- Version 1.0
+-- Version 1.1
 
 local status = arg[1]
 local path = arg[2]
@@ -136,7 +136,7 @@ do
                 -- _,_,out = os.execute('uptime')
                 -- table.insert(tab_out, out)
             elseif string.match(cmd, 'stop') then
-                os.execute('kill $(pidof lua) && /etc/init.d/smstools stop')
+                os.execute('killall -9 lua && /etc/init.d/smstools stop')
             elseif string.match(cmd, 'reboot') then
                 os.execute('reboot')
             end
