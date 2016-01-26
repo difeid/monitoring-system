@@ -2,7 +2,7 @@
 
 -- Initialization and monitoring gpio
 -- Written by DIfeID (difeid@yandex.ru), 2016, Copyleft GPLv3 license
--- Version 1.0
+-- Version 1.1
 
 local DEBUG = false
 local IN_GPIO = {18,20}
@@ -15,12 +15,12 @@ local OUTGOING = '/var/spool/sms/outgoing/'
 
 local function initgpio(in_gpio, out_gpio)
     for _,in_number in ipairs(in_gpio) do
-        os.execute('echo '..in_number..' > /sys/class/gpio/export &> /dev/null')
+        os.execute('echo '..in_number..' > /sys/class/gpio/export')
         os.execute('echo in > /sys/class/gpio/gpio'..in_number..'/direction')
         if DEBUG then print('gpio'..in_number..' in') end
     end
     for _,out_number in ipairs(out_gpio) do
-        os.execute('echo '..out_number..' > /sys/class/gpio/export &> /dev/null')
+        os.execute('echo '..out_number..' > /sys/class/gpio/export')
         os.execute('echo out > /sys/class/gpio/gpio'..out_number..'/direction')
         if DEBUG then print('gpio'..out_number..' out') end
     end

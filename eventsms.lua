@@ -136,7 +136,7 @@ do
                 -- _,_,out = os.execute('uptime')
                 -- table.insert(tab_out, out)
             elseif string.match(cmd, 'stop') then
-                os.execute('killall -9 lua && /etc/init.d/smstools stop')
+                os.execute('killall -9 lua && /etc/init.d/smstools3 stop')
             elseif string.match(cmd, 'reboot') then
                 os.execute('reboot')
             end
