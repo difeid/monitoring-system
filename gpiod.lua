@@ -4,7 +4,7 @@
 -- Written by DIfeID (difeid@yandex.ru), 2016, Copyleft GPLv3 license
 -- Version 1.1
 
-local DEBUG = false
+local DEBUG = true
 local IN_GPIO = {18,20}
 local IN_NAME = {'button 1','button 2'}
 local OUT_GPIO = {21}
