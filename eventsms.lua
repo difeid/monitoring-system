@@ -38,13 +38,15 @@ local function readtext(path)
             from = from or string.match(line, '^From:%s+(.*)')
             alphabet = alphabet or string.match(line, '^Alphabet:%s+(.*)')
         end
-        text = file:read('*a')
-        file:close()
-
+        
         --convert UCS
-        if string.match(alphabet, 'UCS') then
-            text = capture('echo "'..text..'" | iconv -f UCS-2BE -t UTF-8')
+        if string.match(alphabet, 'UCS2') then
+            text = capture('tail -n +13 '..path..' | iconv -f UCS-2BE -t UTF-8')
+        else
+            text = file:read('*a')
         end
+        file:close()
+        
         text = string.gsub(text, '[\n\r]+', ' ')
         text = string.gsub(text, '^%s+', '')
         text = string.gsub(text, '%s+$', '')

@@ -4,7 +4,7 @@
 -- Written by DIfeID (difeid@yandex.ru), 2016, Copyleft GPLv3 license
 -- Version 1.1
 
-local DEBUG = false
+local DEBUG = true
 local ADDRESS = {'n 192.168.100.1:80','p 192.168.8.245','ya.ru'}
 local ADDR_NAME = {'TP LINK','notebook','ya.ru'}
 local WAIT_TIME = '10m'
