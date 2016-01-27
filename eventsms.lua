@@ -3,7 +3,7 @@
 -- Eventhandler for SMS Tools 3
 -- Add eventhandler=/path/to/eventsms.lua into global part of smsd.conf
 -- Written by DIfeID (difeid@yandex.ru), 2016, Copyleft GPLv3 license
--- Version 1.1
+-- Version 1.2
 
 local status = arg[1]
 local path = arg[2]
@@ -120,17 +120,28 @@ do
             if DEBUG then print(cmd) end
             
             for i = 1,#GPIO_NUMBER do
-                if string.match(cmd, GPIO_NAME[i]..' off') then
+                if string.match(cmd, GPIO_NAME[i]..' on') then
                     os.execute('echo 1 > /sys/class/gpio/gpio'..GPIO_NUMBER[i]..'/value')
-                    table.insert(out, GPIO_NAME[i]..' off')
-                elseif string.match(cmd, GPIO_NAME[i]..' on') then
-                    os.execute('echo 0 > /sys/class/gpio/gpio'..GPIO_NUMBER[i]..'/value')
                     table.insert(out, GPIO_NAME[i]..' on')
-                elseif string.match(cmd, GPIO_NAME[i]..' reset') then
-                    os.execute('echo 1 > /sys/class/gpio/gpio'..GPIO_NUMBER[i]..'/value')
-                    sleep('5s')
+                elseif string.match(cmd, GPIO_NAME[i]..' off') then
                     os.execute('echo 0 > /sys/class/gpio/gpio'..GPIO_NUMBER[i]..'/value')
-                    table.insert(out, GPIO_NAME[i]..' reset')
+                    table.insert(out, GPIO_NAME[i]..' off')
+                elseif string.match(cmd, GPIO_NAME[i]..' pulse') then
+                    local state = capture('cat /sys/class/gpio/gpio'..GPIO_NUMBER[i]..'/value')
+                    if state == '0' then
+                        state = '1'
+                    else
+                        state = '0'
+                    end
+                    os.execute('echo '..state..' > /sys/class/gpio/gpio'..GPIO_NUMBER[i]..'/value')
+                    sleep('5s')
+                    if state == '0' then
+                        state = '1'
+                    else
+                        state = '0'
+                    end
+                    os.execute('echo 0 > /sys/class/gpio/gpio'..GPIO_NUMBER[i]..'/value')
+                    table.insert(out, GPIO_NAME[i]..' pulse')
                 end
             end
             
