@@ -140,7 +140,7 @@ do
                     else
                         state = '0'
                     end
-                    os.execute('echo 0 > /sys/class/gpio/gpio'..GPIO_NUMBER[i]..'/value')
+                    os.execute('echo '..state..' > /sys/class/gpio/gpio'..GPIO_NUMBER[i]..'/value')
                     table.insert(out, GPIO_NAME[i]..' pulse')
                 end
             end
