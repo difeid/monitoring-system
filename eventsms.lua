@@ -120,17 +120,17 @@ do
             if DEBUG then print(cmd) end
             
             for i = 1,#GPIO_NUMBER do
-                if string.match(cmd, GPIO_NAME[i]..' off[^%-]?') then
+                if string.match(cmd, GPIO_NAME[i]..' off') then
                     os.execute('echo 1 > /sys/class/gpio/gpio'..GPIO_NUMBER[i]..'/value')
                     table.insert(out, GPIO_NAME[i]..' off')
-                elseif string.match(cmd, GPIO_NAME[i]..' on[^%-]?') then
+                elseif string.match(cmd, GPIO_NAME[i]..' on') then
                     os.execute('echo 0 > /sys/class/gpio/gpio'..GPIO_NUMBER[i]..'/value')
                     table.insert(out, GPIO_NAME[i]..' on')
-                elseif string.match(cmd, GPIO_NAME[i]..' off%-on') then
+                elseif string.match(cmd, GPIO_NAME[i]..' reset') then
                     os.execute('echo 1 > /sys/class/gpio/gpio'..GPIO_NUMBER[i]..'/value')
                     sleep('5s')
                     os.execute('echo 0 > /sys/class/gpio/gpio'..GPIO_NUMBER[i]..'/value')
-                    table.insert(out, GPIO_NAME[i]..' off-on')
+                    table.insert(out, GPIO_NAME[i]..' reset')
                 end
             end
             
