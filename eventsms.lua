@@ -3,7 +3,7 @@
 -- Eventhandler for SMS Tools 3
 -- Add eventhandler=/path/to/eventsms.lua into global part of smsd.conf
 -- Written by DIfeID (difeid@yandex.ru), 2016, Copyleft GPLv3 license
--- Version 1.3
+-- Version 1.4
 
 local status = arg[1]
 local path = arg[2]
@@ -11,9 +11,11 @@ local path = arg[2]
 local DEBUG = true
 local ADMIN_FROM = {'79500000000'}
 local PASSWORD = 'goodlife'
-local GPIO_NUMBER = {21}
+local GPIO_NUMBER = {18}
 local GPIO_NAME = {'relay'}
 local OUTGOING = '/var/spool/sms/outgoing/'
+local STATE_GPIO = '/usr/local/etc/gpiod'
+local STATE_MON = '/usr/local/etc/monitord'
     
 local function capture(cmd)
     local file = assert(io.popen(cmd,'r'))
@@ -24,6 +26,26 @@ end
 
 local function sleep(s)
     os.execute('sleep '..s)
+end
+
+local function readfile(path, tab)
+    local file = io.open(path,'r')
+    local state
+    local text
+    if file then
+        for line in file:lines() do
+            state, text = string.match(line,'^(%d)%s*(.*)')
+            state = tonumber(state)
+            if state == 0 then
+                table.insert(tab, text..' OK')
+            else
+                table.insert(tab, text..' FAIL')
+            end
+        end
+        file:close()
+        if DEBUG then print('readfile '..path..' OK') end
+    end
+    return tab
 end
 
 local function readtext(path)
@@ -127,28 +149,28 @@ do
                     os.execute('echo 0 > /sys/class/gpio/gpio'..GPIO_NUMBER[i]..'/value')
                     table.insert(out, GPIO_NAME[i]..' off')
                 elseif string.match(cmd, GPIO_NAME[i]..' pulse') then
-                    local state = capture('cat /sys/class/gpio/gpio'..GPIO_NUMBER[i]..'/value')
-                    state = tonumber(state)
-                    if state == 0 then
-                        state = 1
+                    local states = capture('cat /sys/class/gpio/gpio'..GPIO_NUMBER[i]..'/value')
+                    states = tonumber(states)
+                    if states == 0 then
+                        states = 1
                     else
-                        state = 0
+                        states = 0
                     end
-                    os.execute('echo '..state..' > /sys/class/gpio/gpio'..GPIO_NUMBER[i]..'/value')
+                    os.execute('echo '..states..' > /sys/class/gpio/gpio'..GPIO_NUMBER[i]..'/value')
                     sleep(5)
-                    if state == 0 then
-                        state = 1
+                    if states == 0 then
+                        states = 1
                     else
-                        state = 0
+                        states = 0
                     end
-                    os.execute('echo '..state..' > /sys/class/gpio/gpio'..GPIO_NUMBER[i]..'/value')
+                    os.execute('echo '..states..' > /sys/class/gpio/gpio'..GPIO_NUMBER[i]..'/value')
                     table.insert(out, GPIO_NAME[i]..' pulse')
                 end
             end
             
-            if string.match(cmd, 'state') then
-                -- _,_,out = os.execute('uptime')
-                -- table.insert(tab_out, out)
+            if string.match(cmd, 'stat') then
+                out = readfile(STATE_GPIO, out)
+                out = readfile(STATE_MON, out)
             elseif string.match(cmd, 'stop') then
                 os.execute('killall -9 lua && /etc/init.d/smstools3 stop')
             elseif string.match(cmd, 'reboot') then
@@ -156,7 +178,7 @@ do
             end
             -- Send SMS
             sendsms(from,out,OUTGOING)
-        end
+        end -- if cmd
     elseif status == 'SEND' then
         -- SEND
     elseif status == 'FAILED' then
