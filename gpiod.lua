@@ -5,9 +5,9 @@
 -- Version 1.1
 
 local DEBUG = true
-local IN_GPIO = {18,20}
+local IN_GPIO = {21,22}
 local IN_NAME = {'button 1','button 2'}
-local OUT_GPIO = {21}
+local OUT_GPIO = {18}
 local WAIT_TIME = '1s'
 local STATE_FILE = '/usr/local/etc/gpiod'
 local ADMIN_TO = {'79500000000'}
