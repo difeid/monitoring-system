@@ -1,13 +1,13 @@
-From: 79500000000
+From: 79500000001
 From_SMSC: 491722270333
 Sent: 00-02-21 22:26:23
 Received: 00-02-21 22:26:29
 Subject: modem1
-Alphabet: U
+Alphabet: UTF8
 UDH: false
 Length: 5
 
 
 
 
-Relay pulse
+Cam1 ir off
