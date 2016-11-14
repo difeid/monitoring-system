@@ -3,16 +3,20 @@
 -- Eventhandler for SMS Tools 3
 -- Add eventhandler=/path/to/eventsms.lua into global part of smsd.conf
 -- Written by DIfeID (difeid@yandex.ru), 2016, Copyleft GPLv3 license
--- Version 1.4
+-- Version 1.6
 
 local status = arg[1]
 local path = arg[2]
 
-local DEBUG = true
+local DEBUG = false
 local ADMIN_FROM = {'79500000000'}
 local PASSWORD = 'goodlife'
 local GPIO_NUMBER = {18}
 local GPIO_NAME = {'relay'}
+local CAM_ADDR = {'192.168.2.146','192.168.2.147'}
+local CAM_NAME = {'cam1','cam2'}
+local CAM_USER = {'admin','admin'}
+local CAM_PASS = {'admin123','password1'}
 local OUTGOING = '/var/spool/sms/outgoing/'
 local STATE_GPIO = '/usr/local/etc/gpiod'
 local STATE_MON = '/usr/local/etc/monitord'
@@ -107,9 +111,7 @@ local function sendsms(to,t_str,outgoing)
     local file = io.open(pathsms,'w')
     if file then
         file:write('To: '..to..'\n\n')
-        if #t_str == 0 then
-            file:write('Command not found\n')
-        else
+        if #t_str > 0 then
             for i = 1,#t_str do
                 file:write(t_str[i]..'\n')
             end
@@ -141,13 +143,16 @@ do
             cmd = string.lower(cmd)
             if DEBUG then print(cmd) end
             
+            -- GPIO control
             for i = 1,#GPIO_NUMBER do
                 if string.match(cmd, GPIO_NAME[i]..' on') then
                     os.execute('echo 1 > /sys/class/gpio/gpio'..GPIO_NUMBER[i]..'/value')
                     table.insert(out, GPIO_NAME[i]..' on')
+                    if DEBUG then print(GPIO_NAME[i]..' on') end
                 elseif string.match(cmd, GPIO_NAME[i]..' off') then
                     os.execute('echo 0 > /sys/class/gpio/gpio'..GPIO_NUMBER[i]..'/value')
                     table.insert(out, GPIO_NAME[i]..' off')
+                    if DEBUG then print(GPIO_NAME[i]..' off') end
                 elseif string.match(cmd, GPIO_NAME[i]..' pulse') then
                     local states = capture('cat /sys/class/gpio/gpio'..GPIO_NUMBER[i]..'/value')
                     states = tonumber(states)
@@ -165,17 +170,69 @@ do
                     end
                     os.execute('echo '..states..' > /sys/class/gpio/gpio'..GPIO_NUMBER[i]..'/value')
                     table.insert(out, GPIO_NAME[i]..' pulse')
+                    if DEBUG then print(GPIO_NAME[i]..' pulse') end
                 end
-            end
+            end -- for (GPIO control)
             
+            -- Camera control
+            for i = 1,#CAM_ADDR do
+                if string.match(cmd, CAM_NAME[i]..' ir on') then
+                    local states = capture('curl -s -f -X PUT -d @ir_night.xml --user '..CAM_USER[i]..':'..CAM_PASS[i]..' http://'..CAM_ADDR[i]..'/ISAPI/Image/channels/1/ircutFilter')
+                    if DEBUG then print('curl:'..states) end
+                    if string.len(states) > 0 then
+                        table.insert(out, CAM_NAME[i]..' night mode on')
+                        if DEBUG then print(CAM_NAME[i]..' night mode on') end
+                    else
+                        table.insert(out, CAM_NAME[i]..' night mode FAIL')
+                        if DEBUG then print(CAM_NAME[i]..' night mode FAIL') end
+                    end
+                elseif string.match(cmd, CAM_NAME[i]..' ir off') then
+                    local states = capture('curl -s -f -X PUT -d @ir_auto.xml --user '..CAM_USER[i]..':'..CAM_PASS[i]..' http://'..CAM_ADDR[i]..'/ISAPI/Image/channels/1/ircutFilter')
+                    if DEBUG then print('curl:'..states) end
+                    if string.len(states) > 0 then
+                        table.insert(out, CAM_NAME[i]..' night mode auto')
+                        if DEBUG then print(CAM_NAME[i]..' night mode auto') end
+                    else
+                        table.insert(out, CAM_NAME[i]..' night mode FAIL')
+                        if DEBUG then print(CAM_NAME[i]..' night mode FAIL') end
+                    end
+                end
+            end -- for (Camera control)
+            
+            -- System status
             if string.match(cmd, 'stat') then
                 out = readfile(STATE_GPIO, out)
+                for i = 1,#GPIO_NUMBER do
+                    local states = capture('cat /sys/class/gpio/gpio'..GPIO_NUMBER[i]..'/value')
+                        states = tonumber(states)
+                        if states == 0 then
+                            table.insert(out, GPIO_NAME[i]..' off')
+                        else
+                            table.insert(out, GPIO_NAME[i]..' on')
+                        end
+                    end
+                end
                 out = readfile(STATE_MON, out)
+                if DEBUG then print('Current states ready') end
+            
+            -- Kill monitoring system
             elseif string.match(cmd, 'stop') then
                 os.execute('killall -9 lua && /etc/init.d/smstools3 stop')
+                table.insert(out, 'Stop monitoring system')
+                if DEBUG then print('Stop monitoring system') end
+                
+            -- Reboot monitoring device
             elseif string.match(cmd, 'reboot') then
                 os.execute('reboot')
+                table.insert(out, 'Reboot monitoring device')
+                if DEBUG then print('Reboot monitoring device') end
+                
+            -- Command not found 
+            else
+                table.insert(out, 'Command not found')
+                if DEBUG then print('Command not found') end
             end
+            
             -- Send SMS
             sendsms(from,out,OUTGOING)
         end -- if cmd
@@ -187,6 +244,6 @@ do
         -- REPORT
     elseif status == 'CALL' then
         -- CALL
-    end
+    end -- if status
 end
 os.exit(0)
