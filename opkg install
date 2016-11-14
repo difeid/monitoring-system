@@ -13,3 +13,4 @@ terminfo
 libncurses
 screen
 netcat
+curl
