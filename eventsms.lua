@@ -203,13 +203,12 @@ do
             if string.match(cmd, 'stat') then
                 out = readfile(STATE_GPIO, out)
                 for i = 1,#GPIO_NUMBER do
-                    local states = capture('cat /sys/class/gpio/gpio'..GPIO_NUMBER[i]..'/value')
-                        states = tonumber(states)
-                        if states == 0 then
-                            table.insert(out, GPIO_NAME[i]..' off')
-                        else
-                            table.insert(out, GPIO_NAME[i]..' on')
-                        end
+                local states = capture('cat /sys/class/gpio/gpio'..GPIO_NUMBER[i]..'/value')
+                    states = tonumber(states)
+                    if states == 0 then
+                        table.insert(out, GPIO_NAME[i]..' off')
+                    else
+                        table.insert(out, GPIO_NAME[i]..' on')
                     end
                 end
                 out = readfile(STATE_MON, out)
