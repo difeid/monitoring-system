@@ -3,7 +3,7 @@
 -- Eventhandler for SMS Tools 3
 -- Add eventhandler=/path/to/eventsms.lua into global part of smsd.conf
 -- Written by DIfeID (difeid@yandex.ru), 2016, Copyleft GPLv3 license
--- Version 1.6
+-- Version 1.7
 
 local status = arg[1]
 local path = arg[2]
@@ -18,8 +18,8 @@ local CAM_NAME = {'cam1','cam2'}
 local CAM_USER = {'admin','admin'}
 local CAM_PASS = {'admin123','password1'}
 local OUTGOING = '/var/spool/sms/outgoing/'
-local STATE_GPIO = '/usr/local/etc/gpiod'
-local STATE_MON = '/usr/local/etc/monitord'
+local PATH_TMP = '/usr/local/tmp/'
+local PATH_XML = '/usr/local/etc/'
     
 local function capture(cmd)
     local file = assert(io.popen(cmd,'r'))
@@ -181,7 +181,7 @@ do
             -- Camera control
             for i = 1,#CAM_ADDR do
                 if string.match(cmd, CAM_NAME[i]..' ir on') then
-                    local report = capture('curl -s -f -X PUT -d @ir_night.xml --user '..CAM_USER[i]..':'..CAM_PASS[i]..' http://'..CAM_ADDR[i]..'/ISAPI/Image/channels/1/ircutFilter')
+                    local report = capture('curl -s -f -X PUT -d @'..PATH_XML..'ir_night.xml --user '..CAM_USER[i]..':'..CAM_PASS[i]..' http://'..CAM_ADDR[i]..'/ISAPI/Image/channels/1/ircutFilter')
                     if DEBUG then print('curl:'..report) end
                     if string.len(report) > 0 then
                         table.insert(out, CAM_NAME[i]..' night mode on')
@@ -191,7 +191,7 @@ do
                         if DEBUG then print(CAM_NAME[i]..' night mode FAIL') end
                     end
                 elseif string.match(cmd, CAM_NAME[i]..' ir off') then
-                    local report = capture('curl -s -f -X PUT -d @ir_auto.xml --user '..CAM_USER[i]..':'..CAM_PASS[i]..' http://'..CAM_ADDR[i]..'/ISAPI/Image/channels/1/ircutFilter')
+                    local report = capture('curl -s -f -X PUT -d @'..PATH_XML..'ir_auto.xml --user '..CAM_USER[i]..':'..CAM_PASS[i]..' http://'..CAM_ADDR[i]..'/ISAPI/Image/channels/1/ircutFilter')
                     if DEBUG then print('curl:'..report) end
                     if string.len(report) > 0 then
                         table.insert(out, CAM_NAME[i]..' night mode auto')
@@ -205,17 +205,19 @@ do
             
             -- System status
             if string.match(cmd, 'stat') then
-                out = readfile(STATE_GPIO, out)
+                out = readfile(PATH_TMP..'gpiod', out)
                 for i = 1,#GPIO_NUMBER do
                 local states = capture('cat /sys/class/gpio/gpio'..GPIO_NUMBER[i]..'/value')
                     states = tonumber(states)
-                    if states == 0 then
+                    if states == 1 then
+                        table.insert(out, GPIO_NAME[i]..' on')
+                    elseif states == 0 then
                         table.insert(out, GPIO_NAME[i]..' off')
                     else
-                        table.insert(out, GPIO_NAME[i]..' on')
+                        table.insert(out, 'FAIL '..GPIO_NAME[i]..' status')
                     end
                 end
-                out = readfile(STATE_MON, out)
+                out = readfile(PATH_TMP..'monitord', out)
                 if DEBUG then print('current states ready') end
             
             -- Kill monitoring system
