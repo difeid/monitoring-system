@@ -8,7 +8,7 @@
 local status = arg[1]
 local path = arg[2]
 
-local DEBUG = false
+local DEBUG = true
 local ADMIN_FROM = {'79500000000'}
 local PASSWORD = 'goodlife'
 local GPIO_NUMBER = {18}
@@ -115,20 +115,24 @@ local function sendsms(to,t_str,outgoing)
             for i = 1,#t_str do
                 file:write(t_str[i]..'\n')
             end
+        else
+            file:write('command not found\n')
+            if DEBUG then print('command not found') end
         end
         file:write(os.date('%X'))
         file:flush()
         file:close()
         os.execute('mv '..pathsms..' '..outgoing)
-        if DEBUG then print('sendsms to '..to..' OK') end
+        if DEBUG then print('sendsms to '..to..) end
     end
 end
 
 -- MAIN chunk
 do
+    if DEBUG then print('event handled') end
     if status == 'RECEIVED' then
         -- RECEIVED
-        if DEBUG then print('sms received') end
+        if DEBUG then print('event status - received') end
         local from, text = readtext(path)
         local cmd = checkpass(text, PASSWORD)
         if not cmd then
@@ -212,24 +216,19 @@ do
                     end
                 end
                 out = readfile(STATE_MON, out)
-                if DEBUG then print('Current states ready') end
+                if DEBUG then print('current states ready') end
             
             -- Kill monitoring system
             elseif string.match(cmd, 'stop') then
                 os.execute('killall -9 lua && /etc/init.d/smstools3 stop')
-                table.insert(out, 'Stop monitoring system')
-                if DEBUG then print('Stop monitoring system') end
+                table.insert(out, 'stop monitoring system')
+                if DEBUG then print('stop monitoring system') end
                 
             -- Reboot monitoring device
             elseif string.match(cmd, 'reboot') then
                 os.execute('reboot')
-                table.insert(out, 'Reboot monitoring device')
-                if DEBUG then print('Reboot monitoring device') end
-                
-            -- Command not found 
-            else
-                table.insert(out, 'Command not found')
-                if DEBUG then print('Command not found') end
+                table.insert(out, 'reboot monitoring device')
+                if DEBUG then print('reboot monitoring device') end
             end
             
             -- Send SMS
@@ -237,12 +236,16 @@ do
         end -- if cmd
     elseif status == 'SEND' then
         -- SEND
+        if DEBUG then print('event status - send') end
     elseif status == 'FAILED' then
         -- FAIL
+        if DEBUG then print('event status - fail') end
     elseif status == 'REPORT' then
         -- REPORT
+        if DEBUG then print('event status - report') end
     elseif status == 'CALL' then
         -- CALL
+        if DEBUG then print('event status - call') end
     end -- if status
 end
 os.exit(0)
