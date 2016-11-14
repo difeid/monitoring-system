@@ -8,7 +8,7 @@
 local status = arg[1]
 local path = arg[2]
 
-local DEBUG = true
+local DEBUG = false
 local ADMIN_FROM = {'79500000000'}
 local PASSWORD = 'goodlife'
 local GPIO_NUMBER = {18}
@@ -181,9 +181,9 @@ do
             -- Camera control
             for i = 1,#CAM_ADDR do
                 if string.match(cmd, CAM_NAME[i]..' ir on') then
-                    local states = capture('curl -s -f -X PUT -d @ir_night.xml --user '..CAM_USER[i]..':'..CAM_PASS[i]..' http://'..CAM_ADDR[i]..'/ISAPI/Image/channels/1/ircutFilter')
-                    if DEBUG then print('curl:'..states) end
-                    if string.len(states) > 0 then
+                    local report = capture('curl -s -f -X PUT -d @ir_night.xml --user '..CAM_USER[i]..':'..CAM_PASS[i]..' http://'..CAM_ADDR[i]..'/ISAPI/Image/channels/1/ircutFilter')
+                    if DEBUG then print('curl:'..report) end
+                    if string.len(report) > 0 then
                         table.insert(out, CAM_NAME[i]..' night mode on')
                         if DEBUG then print(CAM_NAME[i]..' night mode on') end
                     else
@@ -191,9 +191,9 @@ do
                         if DEBUG then print(CAM_NAME[i]..' night mode FAIL') end
                     end
                 elseif string.match(cmd, CAM_NAME[i]..' ir off') then
-                    local states = capture('curl -s -f -X PUT -d @ir_auto.xml --user '..CAM_USER[i]..':'..CAM_PASS[i]..' http://'..CAM_ADDR[i]..'/ISAPI/Image/channels/1/ircutFilter')
-                    if DEBUG then print('curl:'..states) end
-                    if string.len(states) > 0 then
+                    local report = capture('curl -s -f -X PUT -d @ir_auto.xml --user '..CAM_USER[i]..':'..CAM_PASS[i]..' http://'..CAM_ADDR[i]..'/ISAPI/Image/channels/1/ircutFilter')
+                    if DEBUG then print('curl:'..report) end
+                    if string.len(report) > 0 then
                         table.insert(out, CAM_NAME[i]..' night mode auto')
                         if DEBUG then print(CAM_NAME[i]..' night mode auto') end
                     else
