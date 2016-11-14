@@ -123,7 +123,7 @@ local function sendsms(to,t_str,outgoing)
         file:flush()
         file:close()
         os.execute('mv '..pathsms..' '..outgoing)
-        if DEBUG then print('sendsms to '..to..) end
+        if DEBUG then print('sendsms to '..to) end
     end
 end
 
