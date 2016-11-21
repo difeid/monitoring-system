@@ -9,7 +9,7 @@ local status = arg[1]
 local path = arg[2]
 
 local DEBUG = false
-local PATH_CONFIG = '../../etc/mvss-conf.lua'
+local PATH_CONFIG = '/usr/local/etc/mvss-conf.lua'
 
 local function read_settings(path)
     local ok, e = pcall(dofile, path)

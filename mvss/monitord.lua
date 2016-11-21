@@ -7,7 +7,7 @@
 local DEBUG = false
 local WAIT_TIME = '5m'
 local ATTEMPTS = 2
-local PATH_CONFIG = '../../etc/mvss-conf.lua'
+local PATH_CONFIG = '/usr/local/etc/mvss-conf.lua'
 
 local function read_settings(path)
     local ok, e = pcall(dofile, path)
