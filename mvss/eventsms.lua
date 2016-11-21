@@ -3,7 +3,7 @@
 -- Eventhandler for SMS Tools 3
 -- Add eventhandler=/path/to/eventsms.lua into global part of smsd.conf
 -- Written by DIfeID (difeid@yandex.ru), 2016, Copyleft GPLv3 license
--- Version 2.0
+-- Version 2.1
 
 local status = arg[1]
 local path = arg[2]
@@ -205,7 +205,6 @@ do
             
             -- System status
             if string.match(cmd, 'stat') then
-                out = read_file(PATH_TMP..'gpiod', out)
                 for i = 1,#OUT_GPIO_NUMBER do
                 local states = capture('cat /sys/class/gpio/gpio'..OUT_GPIO_NUMBER[i]..'/value')
                     states = tonumber(states)
@@ -217,6 +216,7 @@ do
                         table.insert(out, 'FAIL '..OUT_GPIO_NAME[i]..' status')
                     end
                 end
+                out = read_file(PATH_TMP..'gpiod', out)
                 out = read_file(PATH_TMP..'monitord', out)
                 if DEBUG then print('current states ready') end
             
