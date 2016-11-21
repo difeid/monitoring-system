@@ -5,7 +5,7 @@
 -- Version 2.0
 
 local DEBUG = false
-local WAIT_TIME = '1s'
+local WAIT_TIME = '2s'
 local PATH_CONFIG = '../../etc/mvss-conf.lua'
 
 local function read_settings(path)
